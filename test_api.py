@@ -1,11 +1,10 @@
 import requests
-import json
 
 
 def test_api_endpoints():
     base_url = "http://localhost:8000"
 
-    print("🚀 Testing FastAPI endpoints...")
+    print("Testing FastAPI endpoints...")
 
     # Test health endpoint
     print("\n1. Testing /health")

@@ -1,21 +1,23 @@
+# Doesn't need the server running
+
 from app.services.document_service import DocumentService
 from app.services.embedding_service import EmbeddingService
 from app.services.vector_store import VectorStore
 
 
 def test_vector_pipeline():
-    print("🚀 Testing complete vector pipeline...")
+    print("Testing complete vector pipeline...")
 
     # Step 1: Load documents
     doc_service = DocumentService()
     documents = doc_service.load_all_documents()
-    print(f"✓ Loaded {len(documents)} documents")
+    print(f"Loaded {len(documents)} documents")
 
     # Step 2: Generate embeddings (test with first 20 to keep costs reasonable)
     embedding_service = EmbeddingService()
     test_docs = documents[:20]  # Start small
     embeddings = embedding_service.generate_embeddings(test_docs)
-    print(f"✓ Generated {len(embeddings)} embeddings")
+    print(f"Generated {len(embeddings)} embeddings")
 
     # Step 3: Store in vector database
     vector_store = VectorStore()
@@ -29,7 +31,7 @@ def test_vector_pipeline():
     ]
 
     for query in test_queries:
-        print(f"\n🔍 Query: '{query}'")
+        print(f"\nQuery: '{query}'")
         query_embedding = embedding_service.generate_query_embedding(query)
         results = vector_store.similarity_search(query_embedding, k=3)
 
@@ -39,7 +41,7 @@ def test_vector_pipeline():
 
     # Step 5: Show collection stats
     stats = vector_store.get_collection_stats()
-    print(f"\n📊 Collection Statistics:")
+    print(f"\nCollection Statistics:")
     print(f"Total documents: {stats['total_documents']}")
     print(f"Sources: {stats['sources']}")
 

@@ -1,10 +1,10 @@
-# GenAI Engineer Take-Home Assignment: Python RAG Microservice with Langufuse Observability
+# GenAI Engineer Take-Home Assignment: Python RAG Microservice with Langfuse Observability
 
 ---
 
 ## Objective
 
-Design and implement a Python-based Retrieval-Augmented Generation (RAG) microservice that ingests provided documents, answers queries using an LLM, and includes full observability via Langufuse.
+Design and implement a Python-based Retrieval-Augmented Generation (RAG) microservice that ingests provided documents, answers queries using an LLM, and includes full observability via Langfuse.
 
 ---
 
@@ -42,7 +42,7 @@ Design and implement a Python-based Retrieval-Augmented Generation (RAG) microse
     "answer": "<generated answer>",
     "sources": [
       { "page": <number>, "text": "<passage text>" },
-      …
+        ...
     ]
   }
   ```
@@ -52,7 +52,7 @@ Design and implement a Python-based Retrieval-Augmented Generation (RAG) microse
 - Use a configurable LLM for answer synthesis (e.g. OpenAI API).  
 - Store configuration (API keys, endpoints) in environment variables.
 
-### 4. Langufuse, Langsmith, etc. Observability
+### 4. Langfuse, Langsmith, etc. Observability
 
 - Instrument spans for these operations:  
   - Document ingestion and chunking  
@@ -101,7 +101,7 @@ Don't be afraid to innovate or improve upon the base requirements if you can jus
 
 - **Functionality:** Answers are accurate, context-grounded, and sources are correctly returned.  
 - **Code Quality:** Readability, modular design, error handling, and use of type hints.  
-- **Observability:** Comprehensive Langufuse spans, structured logging, and meaningful metrics.  
+- **Observability:** Comprehensive Langfuse spans, structured logging, and meaningful metrics.  
 - **Deployment:** Docker and Compose setup runs successfully with a single command.  
 - **Documentation:** Clear and complete README enabling immediate evaluation.
 

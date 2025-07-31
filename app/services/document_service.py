@@ -1,9 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
-from typing import List, Dict
+from typing import List
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -33,10 +32,10 @@ def load_think_python() -> str:
             if main_content:
                 text = main_content.get_text(strip=True, separator=' ')
                 all_content.append(f"Chapter: {chapter}\n\n{text}")
-                print(f"✓ Loaded {chapter}")
+                print(f"Loaded {chapter}")
 
         except Exception as e:
-            print(f"❌ Failed to load {chapter}: {str(e)}")
+            print(f"Failed to load {chapter}: {str(e)}")
             continue
 
     return "\n\n".join(all_content)
@@ -57,14 +56,14 @@ def load_pep8() -> str:
         main_content = soup.find('section', id='pep-content') or soup.find('div', class_='section')
         if main_content:
             text = main_content.get_text(strip=True, separator=' ')
-            print("✓ Loaded PEP 8")
+            print("Loaded PEP 8")
             return text
         else:
-            print("❌ Could not find PEP 8 main content")
+            print("Could not find PEP 8 main content")
             return ""
 
     except Exception as e:
-        print(f"❌ Failed to load PEP 8: {str(e)}")
+        print(f"Failed to load PEP 8: {str(e)}")
         return ""
 
 
@@ -89,7 +88,7 @@ class DocumentService:
             )
             documents.append(doc)
 
-        print(f"✓ Created {len(chunks)} chunks for {source}")
+        print(f"Created {len(chunks)} chunks for {source}")
         return documents
 
     def load_all_documents(self) -> List[Document]:
@@ -108,5 +107,5 @@ class DocumentService:
             pep8_docs = self.chunk_text(pep8_text, "PEP 8")
             all_documents.extend(pep8_docs)
 
-        print(f"✓ Total documents loaded: {len(all_documents)}")
+        print(f"Total documents loaded: {len(all_documents)}")
         return all_documents

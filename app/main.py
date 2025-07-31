@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from app.api.endpoints import router
 
-app = FastAPI(title="RAG Microservice", version="1.0.0")
+app = FastAPI(title="RSM RAG Test Microservice", version="1.0.0")
 
 app.include_router(router)
 

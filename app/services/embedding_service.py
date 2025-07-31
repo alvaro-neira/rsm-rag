@@ -24,11 +24,11 @@ class EmbeddingService:
         try:
             # Generate embeddings in batches to avoid rate limits
             embeddings = self.embeddings.embed_documents(texts)
-            print(f"✓ Generated {len(embeddings)} embeddings")
+            print(f"Generated {len(embeddings)} embeddings")
             return embeddings
 
         except Exception as e:
-            print(f"❌ Error generating embeddings: {str(e)}")
+            print(f"Error generating embeddings: {str(e)}")
             raise
 
     def generate_query_embedding(self, query: str) -> List[float]:
@@ -37,5 +37,5 @@ class EmbeddingService:
             embedding = self.embeddings.embed_query(query)
             return embedding
         except Exception as e:
-            print(f"❌ Error generating query embedding: {str(e)}")
+            print(f"Error generating query embedding: {str(e)}")
             raise

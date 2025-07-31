@@ -1,9 +1,7 @@
 import chromadb
-from chromadb.config import Settings
 from typing import List, Dict, Any
 from langchain.schema import Document
 import os
-import json
 
 
 class VectorStore:
@@ -21,7 +19,7 @@ class VectorStore:
             metadata={"description": "RAG microservice document collection"}
         )
 
-        print(f"✓ Vector store initialized. Collection size: {self.collection.count()}")
+        print(f"Vector store initialized. Collection size: {self.collection.count()}")
 
     def add_documents(self, documents: List[Document], embeddings: List[List[float]]):
         """Add documents and their embeddings to the vector store"""
@@ -40,7 +38,7 @@ class VectorStore:
             metadatas=metadatas
         )
 
-        print(f"✓ Added {len(documents)} documents. Total in collection: {self.collection.count()}")
+        print(f"Added {len(documents)} documents. Total in collection: {self.collection.count()}")
 
     def similarity_search(self, query_embedding: List[float], k: int = 5) -> List[Dict[str, Any]]:
         """Search for similar documents"""

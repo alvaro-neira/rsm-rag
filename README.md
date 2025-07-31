@@ -1,67 +1,30 @@
-# RAG Microservice with Langfuse Observability
+# RSM RAG Test Microservice with Langfuse Observability
 
 **Author:** Alvaro Neira  
 **Email:** alvaroneirareyes@gmail.com
 
-A production-ready Python microservice that implements Retrieval-Augmented Generation (RAG) for answering questions about Python programming using Think Python book and PEP 8 documentation.
+* Used Python 3.11.9
 
-## API Endpoints
+## 1. Indexing
 
-### `GET /health`
-Health check endpoint
-```json
-{
-  "status": "ok"
-}
-```
+- **Engine**: Chroma (local, persistent). The reasons for using Chroma are its
+simplicity and lightweight, compared to other alternatives such as Pinecone or FAISS.
+- **Embedding Model**: OpenAI text-embedding-3-small (1536 dimensions)
+- **Chunk Size**: 1000 characters with 200 character overlap
+## 3. LLM Integration with LangChain
 
-### `POST /ingest`
-Trigger document ingestion
-```json
-{
-  "status": "success",
-  "message": "Successfully ingested 277 documents",
-  "total_documents": 277,
-  "sources": {
-    "Think Python": 217,
-    "PEP 8": 60
-  }
-}
-```
+- Used OpenAI API because that API is the one that I am more familiar width. 
+- Used LangChain and not LangGraph because the latter would have added unnecessary complexity for this project.
+- The needed environment variables are set in the `.env` file:
+  - OPENAI_API_KEY=...
+  - LANGFUSE_PUBLIC_KEY=...
+  - LANGFUSE_SECRET_KEY=...
+  - LANGFUSE_HOST=https://*.cloud.langfuse.com
 
-### `POST /query`
-Query documents using RAG
-```json
-{
-  "question": "What is a variable in Python?"
-}
-```
+## 4. Observability
+* Used Langfuse for observability and not LangSmith because the former allows explicit tracing control.
 
-Response:
-```json
-{
-  "answer": "A variable in Python is a named storage location that holds a value...",
-  "sources": [
-    {
-      "page": 0,
-      "text": "This vocabulary is important – you will need it...",
-      "source": "Think Python",
-      "distance": 1.121
-    }
-  ]
-}
-```
-
-## Installation & Setup
-
-### Prerequisites
-
-- Python 3.11+
-- Docker & Docker Compose
-- OpenAI API key
-- Langfuse account (for observability)
-
-### 1. Clone and Setup Environment
+## How to use this
 
 ```bash
 git clone git@github.com:alvaro-neira/rsm-rag.git
@@ -73,51 +36,23 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
-```
 
-### 2. Environment Variables
+# Create .env file with the environment variables described in point 3
+vim .env
 
-Create a `.env` file:
-```env
-OPENAI_API_KEY=your_openai_api_key_here
-LANGFUSE_PUBLIC_KEY=pk-lf-your_public_key
-LANGFUSE_SECRET_KEY=sk-lf-your_secret_key
-LANGFUSE_HOST=https://*.cloud.langfuse.com
-```
-
-### 3. Run with Docker Compose (Recommended)
-
-```bash
-# Build and start services
-docker-compose up --build
+# Build and start service with docker
+docker compose up --build
 
 # Access the API
 curl http://localhost:8000/health
 ```
 
-### 4. Manual Setup (Development)
-
+It can be run without docker:
 ```bash
-# Start the development server
 python -m app.main
-
-# In another terminal, test the endpoints
-python test_api.py
 ```
 
-## Observability
-
-The service includes comprehensive observability through Langfuse:
-
-- **Request Tracing**: Full pipeline traces from query to response
-- **Performance Metrics**: Latency, token usage, and throughput
-- **Error Monitoring**: Detailed error logs and stack traces
-- **Component Insights**: Individual timing for embedding, search, and LLM steps
-
-View traces at your Langfuse dashboard: https://cloud.langfuse.com
-
-## Testing
-
+## Unit Tests
 ```bash
 # Install test dependencies
 pip install pytest
@@ -131,19 +66,3 @@ python test_api.py
 # Test complete RAG pipeline
 python test_rag_complete.py
 ```
-
-## Configuration
-
-### Vector Database
-- **Engine**: Chroma (local, persistent)
-- **Embedding Model**: OpenAI text-embedding-3-small (1536 dimensions)
-- **Chunk Size**: 1000 characters with 200 character overlap
-
-### LLM Configuration
-- **Model**: OpenAI GPT-3.5-turbo
-- **Temperature**: 0.1 (for consistent responses)
-- **Max Tokens**: Auto-determined based on context
-
-### Document Sources
-- **Think Python**: 19 chapters loaded from https://allendowney.github.io/ThinkPython/
-- **PEP 8**: Python style guide from https://peps.python.org/pep-0008/

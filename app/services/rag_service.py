@@ -1,6 +1,5 @@
-from typing import List, Dict, Any
+from typing import Dict, Any
 from langchain_openai import ChatOpenAI
-from langchain.schema import Document
 from app.services.document_service import DocumentService
 from app.services.embedding_service import EmbeddingService
 from app.services.vector_store import VectorStore
@@ -11,6 +10,25 @@ from dotenv import load_dotenv
 import time
 
 load_dotenv()
+
+
+def _create_rag_prompt(question: str, context: str) -> str:
+    """Create a prompt for the LLM with context"""
+    return f"""You are a helpful assistant that answers questions about Python programming using the provided context.
+
+Context from relevant documents:
+{context}
+
+Question: {question}
+
+Instructions:
+- Answer the question based on the provided context
+- If the context doesn't contain enough information to answer the question, say so
+- Be concise but comprehensive
+- Use examples from the context when helpful
+- Focus on Python programming concepts and best practices
+
+Answer:"""
 
 
 class RAGService:
@@ -36,7 +54,7 @@ class RAGService:
     @observe()
     def ingest_documents(self) -> Dict[str, Any]:
         """Load, embed, and store all documents with tracing"""
-        print("🚀 Starting document ingestion...")
+        print("Starting document ingestion...")
 
         try:
             # Load documents
@@ -58,17 +76,17 @@ class RAGService:
                 "message": f"Successfully ingested {len(documents)} documents"
             }
 
-            print(f"✅ Ingestion complete: {result['message']}")
+            print(f"Ingestion complete: {result['message']}")
             return result
 
         except Exception as e:
-            print(f"❌ Error during ingestion: {str(e)}")
+            print(f"Error during ingestion: {str(e)}")
             raise
 
     @observe()
     def query(self, question: str, k: int = 5) -> Dict[str, Any]:
         """Answer a question using RAG with full tracing"""
-        print(f"🔍 Processing query: '{question}'")
+        print(f"Processing query: '{question}'")
 
         try:
             # Generate query embedding
@@ -98,7 +116,7 @@ class RAGService:
 
             # Create prompt for LLM
             context = "\n\n".join(context_chunks)
-            prompt = self._create_rag_prompt(question, context)
+            prompt = _create_rag_prompt(question, context)
 
             # Generate answer
             response = self.llm.invoke(prompt)
@@ -109,27 +127,9 @@ class RAGService:
                 "sources": sources
             }
 
-            print(f"✅ Generated answer ({len(answer)} characters)")
+            print(f"Generated answer ({len(answer)} characters)")
             return result
 
         except Exception as e:
-            print(f"❌ Error: {str(e)}")
+            print(f"Error: {str(e)}")
             raise
-
-    def _create_rag_prompt(self, question: str, context: str) -> str:
-        """Create a prompt for the LLM with context"""
-        return f"""You are a helpful assistant that answers questions about Python programming using the provided context.
-
-Context from relevant documents:
-{context}
-
-Question: {question}
-
-Instructions:
-- Answer the question based on the provided context
-- If the context doesn't contain enough information to answer the question, say so
-- Be concise but comprehensive
-- Use examples from the context when helpful
-- Focus on Python programming concepts and best practices
-
-Answer:"""
