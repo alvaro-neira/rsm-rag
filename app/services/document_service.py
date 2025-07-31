@@ -14,8 +14,7 @@ def load_think_python() -> str:
 
     # Think Python has multiple chapters, let's get the main chapters
     base_url = "https://allendowney.github.io/ThinkPython/"
-    # TODO: In production, use all 19 chapters
-    chapters = [f"chap{i:02d}.html" for i in range(1, 9)]
+    chapters = [f"chap{i:02d}.html" for i in range(1, 20)]
 
     all_content = []
 

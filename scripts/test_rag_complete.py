@@ -1,4 +1,4 @@
-# Doesn't need the server running
+# Doesn't need the FastAPI server running
 
 from app.services.rag_service import RAGService
 
