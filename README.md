@@ -1,5 +1,8 @@
 # RAG Microservice with Langfuse Observability
 
+**Author:** Alvaro Neira  
+**Email:** alvaroneirareyes@gmail.com
+
 A production-ready Python microservice that implements Retrieval-Augmented Generation (RAG) for answering questions about Python programming using Think Python book and PEP 8 documentation.
 
 ## API Endpoints
