@@ -208,7 +208,5 @@ __marimo__/
 
 .gitignore
 .idea
-CLAUDE.md
-claude-prompts.md
 data/
 
