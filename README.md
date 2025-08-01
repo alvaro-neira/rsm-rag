@@ -74,12 +74,56 @@ It doesn't accept any parameters. It returs:
   {
     "answer": "<generated answer>",
     "sources": [
-      { "page": <number>, "text": "<passage text>" },
-        ...
+      { "page": <number>, 
+        "text": "<passage text>",
+        "source": "<Thing Python | PEP 8>",
+        "distance": "<the distance from the query embedding to the document embedding>"}
     ]
   }
   ```
+Example:
+```bash
+curl -X POST http://localhost:8000/query -H "Content-Type: application/json" -d '{"question": "Why would I annotate a Python variable?"}'
+```
 
+Answer:
+```json
+{
+    "answer": "You would annotate a Python variable to provide additional information about the variable's type. Variable annotations help improve code readability, maintainability, and can be used by type checkers to perform static type checking. An example of variable annotation in Python is:\n\n```python\nmessage: str = 'And now for something completely different'\n```\n\nBy annotating the variable `message` with `str`, you indicate that it is expected to hold a string type value. This can help other developers understand the intended usage of the variable and catch potential type-related errors early in the development process.",
+    "sources": [
+        {
+            "page": 27,
+            "text": "an arrow pointing to its value. This kind of figure is called a state diagram because it shows what state each of the variables is in (think of it as the variable’s state of mind).\nWe’ll use state dia...",
+            "source": "Think Python",
+            "distance": 0.9381792545318604
+        },
+        {
+            "page": 26,
+            "text": "Python creates the variable and gives it a value, but the assignment statement has no visible effect.\nHowever, after creating a variable, you can use it as an expression.\nSo we can display the value o...",
+            "source": "Think Python",
+            "distance": 0.9677622318267822
+        },
+        {
+            "page": 56,
+            "text": "reviewing how easy it was to add those annotations, and observing\nwhether their presence increases code understandability. The Python standard library should be conservative in adopting such\nannotatio...",
+            "source": "PEP 8",
+            "distance": 0.9823206663131714
+        },
+        {
+            "page": 57,
+            "text": "However, it is expected that users of third party library packages\nmay want to run type checkers over those packages.  For this purpose PEP 484 recommends the use of stub files: .pyi files that are re...",
+            "source": "PEP 8",
+            "distance": 0.9908217787742615
+        },
+        {
+            "page": 25,
+            "text": "And I’ll introduce more of the vocabulary we use to talk about programs, including “argument” and “module”. 2.1. Variables # A variable is a name that refers to a value.\nTo create a variable, we can w...",
+            "source": "Think Python",
+            "distance": 1.0334444046020508
+        }
+    ]
+}
+```
 ## 3. LLM Integration with LangChain
 
 - Used OpenAI API because that API is the one that I am most familiar with. 

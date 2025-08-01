@@ -13,6 +13,22 @@
 				"header": []
 			},
 			"response": []
+		},
+		{
+			"name": "query1",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "query2",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
 		}
 	]
 }
