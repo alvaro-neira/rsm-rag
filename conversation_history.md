@@ -151,5 +151,53 @@ Current `tests/test_rag_service.py` only has 2 tests but should have ~10-15 comp
 - Edge case testing (empty results, long text truncation)
 - Verification of method calls and parameters
 
+## Current Session - E2E Test Creation (August 1, 2025)
+
+**User**: Check my last changes
+
+**Claude**: Checked git status and recent changes:
+- **Modified files**: `.gitignore` (cleaned up entries), `README.md` (added Langfuse/Grafana screenshots)
+- **New files**: `CLAUDE.md` (project instructions), `img/` directory with screenshots
+- **Latest commit**: "Added query example" (7df3446)
+- Currently 1 commit ahead of remote `fine-tuning` branch
+
+**User**: Create an e2e test where you make the actual /ingest with the actual 2 documents. I mean: call document_service.load_all_documents()
+
+**Claude**: Created comprehensive e2e test `/Users/aneira/rsm-rag/tests/e2e/test_ingest_e2e.py`:
+
+### Test Features:
+1. **Calls actual `document_service.load_all_documents()`** - loads Think Python and PEP 8 documents
+2. **Tests `/ingest` API endpoint** with real HTTP requests  
+3. **Verifies document storage** in ChromaDB vector database
+4. **Tests queries** against ingested content with 4 test questions
+5. **Provides detailed output** showing document counts, sources, and query results
+
+### Test Flow:
+- Check initial vector store state → Load documents → Call `/ingest` API → Compare before/after counts → Test queries → Summary
+
+### Issues Found & Fixed:
+
+**Issue 1**: `clear_all()` method doesn't exist
+- **Fix**: Replaced with `get_collection_stats()` to check before/after document counts instead of clearing
+
+**Issue 2**: Special characters in Python logs  
+- **Fix**: Removed all ✓, ✗, 🎉, ❌ characters from log output for plain text
+
+**Issue 3**: KeyError on `total_documents` in summary
+- **Fix**: Changed variable scope - `result` → `ingestion_result` with proper scoping and null checks
+
+### Final Test Structure:
+```python
+def test_ingest_endpoint_e2e():
+    # 1. Check initial vector store state
+    # 2. Test document_service.load_all_documents()  
+    # 3. Test POST /ingest endpoint
+    # 4. Verify documents in vector store
+    # 5. Test queries against ingested documents
+    # 6. Summary report
+```
+
+**Run with**: `python tests/e2e/test_ingest_e2e.py` (requires FastAPI server running)
+
 ---
 *This file will be updated with future conversation history as requested*

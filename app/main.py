@@ -3,7 +3,6 @@ from app.api.endpoints import router
 from app.middleware.logging_middleware import LoggingMiddleware
 from app.middleware.metrics_middleware import MetricsMiddleware
 from app.core.logging_config import setup_logging
-import os
 from dotenv import load_dotenv
 
 load_dotenv()

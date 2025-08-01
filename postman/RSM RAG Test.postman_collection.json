@@ -29,6 +29,34 @@
 				"header": []
 			},
 			"response": []
+		},
+		{
+			"name": "query3",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"question\": \"Why do you use Python instead of Java for RAG operations?\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/query",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"query"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

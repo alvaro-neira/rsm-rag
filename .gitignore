@@ -209,7 +209,5 @@ __marimo__/
 .gitignore
 .idea
 data/
-CLAUDE.md
-claude-prompts.md
-swa
+.DS_Store
 

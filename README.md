@@ -10,7 +10,7 @@
 - OpenAI API key
 - Langfuse account
 
-## How to use deploy this service
+## How to deploy this service
 
 ```bash
 git clone git@github.com:alvaro-neira/rsm-rag.git
@@ -50,7 +50,7 @@ simplicity and lightweight, compared to other alternatives such as Pinecone or F
 
 - `GET http://localhost:8000/health` → returns 200 OK.  
 - `POST http://localhost:8000/ingest` → triggers the ingestion. The 2 documents ("Think Python" and "PEP 8") are automatically ingested when the service starts.
-It doesn't accept any parameters. It returs:
+It doesn't accept any parameters. It returns:
 ```json
 {
     "status": "success",
@@ -139,7 +139,8 @@ Answer:
 ### Langfuse Tracing
 * Used Langfuse for observability and not LangSmith because the former allows explicit tracing control.
 To see the instrumented spans, see them in https://cloud.langfuse.com/
-
+Example:
+![langfuse1](./img/langfuse1.png)
 ### Structured Logging
 The application emits structured JSON logs for all requests, errors, and significant events. All logs include:
 
@@ -179,7 +180,7 @@ The application emits structured JSON logs for all requests, errors, and signifi
 
 ```
 ### System Metrics
-The application exposes comprehensive metrics for monitoring and alerting at `/metrics` endpoint:
+The application exposes other metrics for monitoring and alerting at `/metrics` endpoint:
 
 **HTTP Request Metrics:**
 - `http_requests_total` - Total HTTP requests by method, endpoint, and status code
@@ -207,18 +208,16 @@ The application exposes comprehensive metrics for monitoring and alerting at `/m
 **Error Metrics:**
 - `errors_total{error_type, operation}` - Error counts by type and operation
 
-**Usage:**
-```bash
-# Access metrics endpoint
-curl http://localhost:8000/metrics
-```
+**Usage:**\
+Go to http://localhost:8000/metrics
 
-Prometheus and Grafana are included in the Docker Compose setup for easy monitoring and visualization of these metrics:
+**Prometheus** and **Grafana** are included in the Docker Compose setup for easy monitoring and visualization of these metrics:
 * Prometheus: http://localhost:9090
 * Grafana: http://localhost:3000 (User: admin/ Pass: admin)
 
 (Only if the FastAPI server is run with Docker)
 
+These tools were chosen for their ease of use and integration with Python applications. Also, they are open source and widely adopted in the industry.
 ### Create Useful Queries In Prometheus (http://localhost:9090):
 
 **1. Query Processing Rate:**
@@ -240,6 +239,8 @@ rate(http_requests_total{status_code!="200"}[5m]) / rate(http_requests_total[5m]
 ```promql
 histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
 ```
+Example of the last query:
+* ![prometheus11](./img/prometheus1.png)
 
 ### Set Up Grafana Dashboard
 
@@ -268,15 +269,18 @@ rate(rag_queries_total[1m])
 rate(rag_query_duration_seconds_sum[5m]) / rate(rag_query_duration_seconds_count[5m])
 ```
 
-**Panel 3: HTTP Request Duration by Endpoint**
+**Panel 3: Average Request Duration by Endpoint**
 ```promql
-http_request_duration_seconds{method="POST"}
+rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])
 ```
 
 **Panel 4: Error Rate**
 ```promql
 (rate(http_requests_total{status_code!="200"}[5m]) / rate(http_requests_total[5m])) * 100
 ```
+
+Example:
+* ![grafana1](./img/grafana1.png)
 
 ## Testing
 ```bash
