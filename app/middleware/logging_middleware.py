@@ -20,18 +20,12 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         method = request.method
         path = request.url.path
         query_params = str(request.query_params) if request.query_params else None
-        client_ip = request.client.host if request.client else None
-        user_agent = request.headers.get("user-agent")
         
         # Log request
-        request_data = {
-            "client_ip": client_ip,
-            "user_agent": user_agent,
-        }
         if query_params:
-            request_data["query_params"] = query_params
-            
-        log_request(self.logger, method, path, **request_data)
+            log_request(self.logger, method, path, query_params=query_params)
+        else:
+            log_request(self.logger, method, path)
         
         # Process request
         try:
@@ -46,8 +40,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 method, 
                 path, 
                 response.status_code, 
-                duration_ms,
-                client_ip=client_ip
+                duration_ms
             )
             
             return response
@@ -65,8 +58,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                     "path": path,
                     "duration_ms": duration_ms,
                     "error_type": type(e).__name__,
-                    "error_message": str(e),
-                    "client_ip": client_ip
+                    "error_message": str(e)
                 },
                 exc_info=True
             )

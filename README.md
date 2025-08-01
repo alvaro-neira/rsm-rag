@@ -18,7 +18,7 @@ simplicity and lightweight, compared to other alternatives such as Pinecone or F
 - **Chunk Size**: 1000 characters with 200 character overlap
 ## 3. LLM Integration with LangChain
 
-- Used OpenAI API because that API is the one that I am more familiar width. 
+- Used OpenAI API because that API is the one that I am most familiar with. 
 - Used LangChain and not LangGraph because the latter would have added unnecessary complexity for this project.
 - The needed environment variables are set in the `.env` file:
   - OPENAI_API_KEY=...
@@ -26,12 +26,49 @@ simplicity and lightweight, compared to other alternatives such as Pinecone or F
   - LANGFUSE_SECRET_KEY=sk-...
   - LANGFUSE_HOST=https://....cloud.langfuse.com
 
-## 4. Observability & Logging
+## 4. Observability
 
 ### Langfuse Tracing
 * Used Langfuse for observability and not LangSmith because the former allows explicit tracing control.
 
-### Structured Logging
+## How to use this
+
+```bash
+git clone git@github.com:alvaro-neira/rsm-rag.git
+cd rsm-rag
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Create .env file with the environment variables described in point 3
+vim .env
+
+# Build and start FastAPI server with Docker (Docker Desktop must be running)
+docker compose up --build
+
+# Access the API
+curl http://localhost:8000/health
+```
+
+The FastAPI server can be run without docker:
+```bash
+python -m app.main
+```
+
+## Testing
+```bash
+# Install test dependencies
+pip install pytest pytest-mock
+
+# Run tests (unit tests, integration tests, end-to-end tests)
+pytest -v
+```
+
+## Structured Logging
 The application emits structured JSON logs for all requests, errors, and significant events. All logs include:
 
 **Standard Fields:**
@@ -62,9 +99,7 @@ The application emits structured JSON logs for all requests, errors, and signifi
   "message": "POST /query",
   "event_type": "request",
   "http_method": "POST",
-  "path": "/query",
-  "client_ip": "127.0.0.1",
-  "user_agent": "curl/7.68.0"
+  "path": "/query"
 }
 
 // Query Processing Log
@@ -105,44 +140,6 @@ The application emits structured JSON logs for all requests, errors, and signifi
   "http_method": "POST",
   "path": "/query",
   "status_code": 200,
-  "duration_ms": 1250.5,
-  "client_ip": "127.0.0.1"
+  "duration_ms": 1250.5
 }
-```
-
-## How to use this
-
-```bash
-git clone git@github.com:alvaro-neira/rsm-rag.git
-cd rsm-rag
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Create .env file with the environment variables described in point 3
-vim .env
-
-# Build and start FastAPI server with Docker (Docker Desktop must be running)
-docker compose up --build
-
-# Access the API
-curl http://localhost:8000/health
-```
-
-The FastAPI server can be run without docker:
-```bash
-python -m app.main
-```
-
-## Testing
-```bash
-# Install test dependencies
-pip install pytest pytest-mock
-
-# Run tests (unit tests, integration tests, end-to-end tests)
-pytest -v
 ```
