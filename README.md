@@ -296,7 +296,7 @@ pip install -r requirements.txt
 # Install test dependencies
 pip install pytest pytest-mock
 
-# Run the FastAPI server (docker or directly with Python)
+# Run the FastAPI server if you haven't already (docker or directly with Python)
 
 # Run tests (unit tests, integration tests, end-to-end tests)
 pytest -v
