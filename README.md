@@ -3,7 +3,12 @@
 **Author:** Alvaro Neira  
 **Email:** alvaroneirareyes@gmail.com
 
-* Used Python 3.11.9
+### Prerequisites
+
+- Python 3.11+ (I used 3.11.9)
+- Docker & Docker Compose
+- OpenAI API key
+- Langfuse account
 
 ## 1. Indexing
 
@@ -40,29 +45,23 @@ pip install -r requirements.txt
 # Create .env file with the environment variables described in point 3
 vim .env
 
-# Build and start service with docker
+# Build and start FastAPI server with Docker (Docker Desktop must be running)
 docker compose up --build
 
 # Access the API
 curl http://localhost:8000/health
 ```
 
-It can be run without docker:
+The FastAPI server can be run without docker:
 ```bash
 python -m app.main
 ```
 
-## Unit Tests
+## Testing
 ```bash
 # Install test dependencies
-pip install pytest
+pip install pytest pytest-mock
 
-# Run unit tests
-pytest tests/ -v
-
-# Test API endpoints
-python test_api.py
-
-# Test complete RAG pipeline
-python test_rag_complete.py
+# Run tests (unit tests, integration tests, end-to-end tests)
+pytest -v
 ```

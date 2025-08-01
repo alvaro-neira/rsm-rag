@@ -14,6 +14,7 @@ charset-normalizer==3.4.2
 chromadb==1.0.15
 click==8.2.1
 coloredlogs==15.0.1
+coverage==7.10.1
 dataclasses-json==0.6.7
 distro==1.9.0
 durationpy==0.10
@@ -36,6 +37,7 @@ humanfriendly==10.0
 idna==3.10
 importlib_metadata==8.7.0
 importlib_resources==6.5.2
+iniconfig==2.1.0
 jiter==0.10.0
 jsonpatch==1.33
 jsonpointer==3.0.0
@@ -71,6 +73,7 @@ opentelemetry-semantic-conventions==0.57b0
 orjson==3.11.1
 overrides==7.7.0
 packaging==24.2
+pluggy==1.6.0
 posthog==5.4.0
 propcache==0.3.2
 protobuf==6.31.1
@@ -83,6 +86,9 @@ pydantic_core==2.33.2
 Pygments==2.19.2
 PyPika==0.48.9
 pyproject_hooks==1.2.0
+pytest==8.4.1
+pytest-cov==6.2.1
+pytest-mock==3.14.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
 PyYAML==6.0.2
@@ -119,14 +125,3 @@ wrapt==1.17.2
 yarl==1.20.1
 zipp==3.23.0
 zstandard==0.23.0
-
-pytest~=8.4.1
-typing_extensions~=4.14.1
-pip~=25.1.1
-importlib_metadata~=8.7.0
-pyproject_hooks~=1.2.0
-setuptools~=80.3.1
-pyasn1_modules~=0.4.2
-pydantic_core~=2.33.2
-importlib_resources~=6.5.2
-mypy_extensions~=1.1.0
