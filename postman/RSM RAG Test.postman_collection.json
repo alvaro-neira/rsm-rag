@@ -1,0 +1,18 @@
+{
+	"info": {
+		"_postman_id": "2640d7a8-e887-43d9-a67f-b86e4bc0c11f",
+		"name": "RSM RAG Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31137446"
+	},
+	"item": [
+		{
+			"name": "ingest",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
