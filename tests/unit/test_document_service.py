@@ -1,4 +1,4 @@
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from app.services.document_service import DocumentService
 
 
@@ -17,27 +17,17 @@ class TestDocumentService:
         assert all(chunk.metadata["source"] == "test_source" for chunk in chunks)
         assert all(len(chunk.page_content) <= 1200 for chunk in chunks)  # Within chunk size + overlap
 
-    @patch('requests.get')
-    def test_load_pep8_success(self, mock_get):
-        """Test PEP 8 loading with mocked HTTP request"""
-        # Mock successful response
-        mock_response = Mock()
-        mock_response.raise_for_status.return_value = None
-        mock_response.content = b'<section id="pep-content">PEP 8 content here</section>'
-        mock_get.return_value = mock_response
-
-        doc_service = DocumentService()
-        result = doc_service.load_pep8()
-
-        assert "PEP 8 content here" in result
-        mock_get.assert_called_once()
-
-    @patch('requests.get')
-    def test_load_pep8_failure(self, mock_get):
-        """Test PEP 8 loading with network failure"""
-        mock_get.side_effect = Exception("Network error")
-
-        doc_service = DocumentService()
-        result = doc_service.load_pep8()
-
-        assert result == ""  # Should return empty string on failure
+    @patch('app.services.document_service.load_pep8')
+    def test_load_all_documents_with_pep8(self, mock_load_pep8):
+        """Test load_all_documents with mocked PEP 8 content"""
+        mock_load_pep8.return_value = "Sample PEP 8 content for testing"
+        
+        with patch('app.services.document_service.load_think_python') as mock_think_python:
+            mock_think_python.return_value = "Sample Think Python content"
+            
+            doc_service = DocumentService()
+            documents = doc_service.load_all_documents()
+            
+            assert len(documents) > 0
+            assert any("Think Python" in doc.metadata["source"] for doc in documents)
+            assert any("PEP 8" in doc.metadata["source"] for doc in documents)
