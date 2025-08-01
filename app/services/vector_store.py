@@ -3,6 +3,7 @@ from typing import List, Dict, Any
 from langchain.schema import Document
 from app.core.logging_config import get_logger, log_event
 from app.core.metrics import metrics_recorder
+from langfuse import observe
 import os
 
 
@@ -76,6 +77,7 @@ class VectorStore:
             )
             raise
 
+    @observe(name="similarity_search")
     def similarity_search(self, query_embedding: List[float], k: int = 5) -> List[Dict[str, Any]]:
         """Search for similar documents"""
         try:

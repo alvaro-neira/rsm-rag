@@ -3,6 +3,7 @@ from langchain.schema import Document
 from typing import List
 from app.core.logging_config import get_logger, log_event, log_error
 from app.core.metrics import metrics_recorder
+from langfuse import observe
 import os
 import time
 from dotenv import load_dotenv
@@ -18,6 +19,7 @@ class EmbeddingService:
         )
         self.logger = get_logger("embedding_service")
 
+    @observe(name="embedding_computation_documents")
     def generate_embeddings(self, documents: List[Document]) -> List[List[float]]:
         """Generate embeddings for a list of documents"""
         start_time = time.time()
@@ -64,6 +66,7 @@ class EmbeddingService:
             })
             raise
 
+    @observe(name="embedding_computation_query")
     def generate_query_embedding(self, query: str) -> List[float]:
         """Generate embedding for a single query"""
         start_time = time.time()

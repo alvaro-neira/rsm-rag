@@ -163,8 +163,7 @@ class RAGService:
             prompt = _create_rag_prompt(question, context)
 
             # Generate answer
-            response = self.llm.invoke(prompt)
-            answer = response.content
+            answer = self._generate_llm_response(prompt)
 
             duration = time.time() - start_time
             result = {
@@ -207,3 +206,9 @@ class RAGService:
                 "k": k
             })
             raise
+
+    @observe(name="llm_inference")
+    def _generate_llm_response(self, prompt: str) -> str:
+        """Generate LLM response with tracing"""
+        response = self.llm.invoke(prompt)
+        return response.content

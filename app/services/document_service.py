@@ -4,11 +4,13 @@ from typing import List
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
 from app.core.logging_config import get_logger, log_event, log_error
+from langfuse import observe
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
+@observe(name="document_loading_think_python")
 def load_think_python() -> str:
     """Load the Think Python book content"""
     logger = get_logger("document_service")
@@ -42,6 +44,7 @@ def load_think_python() -> str:
     return "\n\n".join(all_content)
 
 
+@observe(name="document_loading_pep8")
 def load_pep8() -> str:
     """Load PEP 8 content"""
     logger = get_logger("document_service")
@@ -81,6 +84,7 @@ class DocumentService:
         )
         self.logger = get_logger("document_service")
 
+    @observe(name="document_chunking")
     def chunk_text(self, text: str, source: str) -> List[Document]:
         """Split text into chunks"""
         log_event(
