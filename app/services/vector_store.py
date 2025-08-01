@@ -2,6 +2,7 @@ import chromadb
 from typing import List, Dict, Any
 from langchain.schema import Document
 from app.core.logging_config import get_logger, log_event
+from app.core.metrics import metrics_recorder
 import os
 
 
@@ -40,47 +41,72 @@ class VectorStore:
             document_count=len(documents)
         )
 
-        # Prepare data for Chroma
-        ids = [f"doc_{i}" for i in range(len(documents))]
-        texts = [doc.page_content for doc in documents]
-        metadatas = [doc.metadata for doc in documents]
+        try:
+            # Prepare data for Chroma
+            ids = [f"doc_{i}" for i in range(len(documents))]
+            texts = [doc.page_content for doc in documents]
+            metadatas = [doc.metadata for doc in documents]
 
-        # Add to collection
-        self.collection.add(
-            ids=ids,
-            documents=texts,
-            embeddings=embeddings,
-            metadatas=metadatas
-        )
+            # Add to collection
+            self.collection.add(
+                ids=ids,
+                documents=texts,
+                embeddings=embeddings,
+                metadatas=metadatas
+            )
 
-        total_count = self.collection.count()
-        log_event(
-            self.logger, 
-            "documents_add_completed", 
-            "Documents added to vector store",
-            documents_added=len(documents),
-            total_collection_size=total_count
-        )
+            total_count = self.collection.count()
+            
+            # Record metrics
+            metrics_recorder.record_vector_store_operation("add", success=True)
+            metrics_recorder.update_vector_store_size(total_count)
+            
+            log_event(
+                self.logger, 
+                "documents_add_completed", 
+                "Documents added to vector store",
+                documents_added=len(documents),
+                total_collection_size=total_count
+            )
+        except Exception as e:
+            metrics_recorder.record_vector_store_operation("add", success=False)
+            metrics_recorder.record_error(
+                error_type=type(e).__name__,
+                operation="vector_store_add"
+            )
+            raise
 
     def similarity_search(self, query_embedding: List[float], k: int = 5) -> List[Dict[str, Any]]:
         """Search for similar documents"""
-        results = self.collection.query(
-            query_embeddings=[query_embedding],
-            n_results=k,
-            include=["documents", "metadatas", "distances"]
-        )
+        try:
+            results = self.collection.query(
+                query_embeddings=[query_embedding],
+                n_results=k,
+                include=["documents", "metadatas", "distances"]
+            )
 
-        # Format results
-        formatted_results = []
-        if results['documents'] and results['documents'][0]:
-            for i in range(len(results['documents'][0])):
-                formatted_results.append({
-                    'text': results['documents'][0][i],
-                    'metadata': results['metadatas'][0][i],
-                    'distance': results['distances'][0][i]
-                })
+            # Format results
+            formatted_results = []
+            if results['documents'] and results['documents'][0]:
+                for i in range(len(results['documents'][0])):
+                    formatted_results.append({
+                        'text': results['documents'][0][i],
+                        'metadata': results['metadatas'][0][i],
+                        'distance': results['distances'][0][i]
+                    })
 
-        return formatted_results
+            # Record metrics
+            metrics_recorder.record_vector_store_operation("search", success=True)
+            
+            return formatted_results
+        
+        except Exception as e:
+            metrics_recorder.record_vector_store_operation("search", success=False)
+            metrics_recorder.record_error(
+                error_type=type(e).__name__,
+                operation="vector_store_search"
+            )
+            raise
 
     def get_collection_stats(self) -> Dict[str, Any]:
         """Get statistics about the collection"""

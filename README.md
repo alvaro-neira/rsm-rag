@@ -26,47 +26,10 @@ simplicity and lightweight, compared to other alternatives such as Pinecone or F
   - LANGFUSE_SECRET_KEY=sk-...
   - LANGFUSE_HOST=https://....cloud.langfuse.com
 
-## 4. Observability
+## 4. Observability & Monitoring
 
 ### Langfuse Tracing
 * Used Langfuse for observability and not LangSmith because the former allows explicit tracing control.
-
-## How to use this
-
-```bash
-git clone git@github.com:alvaro-neira/rsm-rag.git
-cd rsm-rag
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Create .env file with the environment variables described in point 3
-vim .env
-
-# Build and start FastAPI server with Docker (Docker Desktop must be running)
-docker compose up --build
-
-# Access the API
-curl http://localhost:8000/health
-```
-
-The FastAPI server can be run without docker:
-```bash
-python -m app.main
-```
-
-## Testing
-```bash
-# Install test dependencies
-pip install pytest pytest-mock
-
-# Run tests (unit tests, integration tests, end-to-end tests)
-pytest -v
-```
 
 ## Structured Logging
 The application emits structured JSON logs for all requests, errors, and significant events. All logs include:
@@ -142,4 +105,85 @@ The application emits structured JSON logs for all requests, errors, and signifi
   "status_code": 200,
   "duration_ms": 1250.5
 }
+
 ```
+### System Metrics
+The application exposes comprehensive metrics for monitoring and alerting at `/metrics` endpoint using Prometheus format (the most suitable for this kind of metrics).
+
+**HTTP Request Metrics:**
+- `http_requests_total` - Total HTTP requests by method, endpoint, and status code
+- `http_request_duration_seconds` - Request latency histogram with buckets
+- `http_requests_in_progress` - Currently active HTTP requests
+
+**RAG Business Metrics:**
+- `rag_queries_total{status="success|error"}` - Total RAG queries processed
+- `rag_query_duration_seconds` - RAG query processing time histogram
+- `rag_sources_found` - Distribution of sources found per query
+
+**Document Processing Metrics:**
+- `document_ingestion_total{status="success|error"}` - Document ingestion operations
+- `document_ingestion_duration_seconds` - Ingestion processing time
+- `documents_processed_total` - Total documents processed counter
+
+**Vector Store Metrics:**
+- `vector_store_operations_total{operation="add|search", status="success|error"}` - Vector store operations
+- `vector_store_collection_size` - Current number of documents in collection
+
+**Embedding Metrics:**
+- `embeddings_generated_total{type="document|query"}` - Total embeddings generated
+- `embedding_generation_duration_seconds{type="document|query"}` - Embedding generation time
+
+**Error Metrics:**
+- `errors_total{error_type, operation}` - Error counts by type and operation
+
+**Usage:**
+```bash
+# Access metrics endpoint
+curl http://localhost:8000/metrics
+
+# Example Prometheus scrape config
+scrape_configs:
+  - job_name: 'rsm-rag'
+    static_configs:
+      - targets: ['localhost:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+```
+
+## How to use this
+
+```bash
+git clone git@github.com:alvaro-neira/rsm-rag.git
+cd rsm-rag
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Create .env file with the environment variables described in point 3
+vim .env
+
+# Build and start FastAPI server with Docker (Docker Desktop must be running)
+docker compose up --build
+
+# Access the API
+curl http://localhost:8000/health
+```
+
+The FastAPI server can be run without docker:
+```bash
+python -m app.main
+```
+
+## Testing
+```bash
+# Install test dependencies
+pip install pytest pytest-mock
+
+# Run tests (unit tests, integration tests, end-to-end tests)
+pytest -v
+```
+

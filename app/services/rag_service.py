@@ -4,6 +4,7 @@ from app.services.document_service import DocumentService
 from app.services.embedding_service import EmbeddingService
 from app.services.vector_store import VectorStore
 from app.core.logging_config import get_logger, log_event, log_error
+from app.core.metrics import metrics_recorder
 from langfuse import Langfuse
 from langfuse import observe
 import os
@@ -56,6 +57,7 @@ class RAGService:
     @observe()
     def ingest_documents(self) -> Dict[str, Any]:
         """Load, embed, and store all documents with tracing"""
+        start_time = time.time()
         log_event(self.logger, "ingestion_started", "Starting document ingestion")
 
         try:
@@ -63,13 +65,15 @@ class RAGService:
             documents = self.document_service.load_all_documents()
 
             # Generate embeddings
-            start_time = time.time()
+            embedding_start = time.time()
             embeddings = self.embedding_service.generate_embeddings(documents)
-            duration = time.time() - start_time
+            embedding_duration = time.time() - embedding_start
 
             # Store in vector database
             self.vector_store.add_documents(documents, embeddings)
             stats = self.vector_store.get_collection_stats()
+
+            total_duration = time.time() - start_time
 
             result = {
                 "status": "success",
@@ -78,23 +82,42 @@ class RAGService:
                 "message": f"Successfully ingested {len(documents)} documents"
             }
 
+            # Record metrics
+            metrics_recorder.record_document_ingestion(
+                duration_seconds=total_duration,
+                documents_count=len(documents),
+                success=True
+            )
+            metrics_recorder.update_vector_store_size(stats['total_documents'])
+
             log_event(
                 self.logger, 
                 "ingestion_completed", 
                 "Document ingestion completed",
                 total_documents=result['total_documents'],
                 sources=result['sources'],
-                embedding_duration_seconds=duration
+                embedding_duration_seconds=embedding_duration
             )
             return result
 
         except Exception as e:
+            total_duration = time.time() - start_time
+            metrics_recorder.record_document_ingestion(
+                duration_seconds=total_duration,
+                documents_count=0,
+                success=False
+            )
+            metrics_recorder.record_error(
+                error_type=type(e).__name__,
+                operation="document_ingestion"
+            )
             log_error(self.logger, e, {"operation": "document_ingestion"})
             raise
 
     @observe()
     def query(self, question: str, k: int = 5) -> Dict[str, Any]:
         """Answer a question using RAG with full tracing"""
+        start_time = time.time()
         log_event(
             self.logger, 
             "query_started", 
@@ -111,6 +134,12 @@ class RAGService:
             search_results = self.vector_store.similarity_search(query_embedding, k=k)
 
             if not search_results:
+                duration = time.time() - start_time
+                metrics_recorder.record_rag_query(
+                    duration_seconds=duration,
+                    sources_count=0,
+                    success=True
+                )
                 return {
                     "answer": "I couldn't find any relevant information to answer your question.",
                     "sources": []
@@ -137,10 +166,18 @@ class RAGService:
             response = self.llm.invoke(prompt)
             answer = response.content
 
+            duration = time.time() - start_time
             result = {
                 "answer": answer,
                 "sources": sources
             }
+
+            # Record metrics
+            metrics_recorder.record_rag_query(
+                duration_seconds=duration,
+                sources_count=len(sources),
+                success=True
+            )
 
             log_event(
                 self.logger, 
@@ -154,6 +191,16 @@ class RAGService:
             return result
 
         except Exception as e:
+            duration = time.time() - start_time
+            metrics_recorder.record_rag_query(
+                duration_seconds=duration,
+                sources_count=0,
+                success=False
+            )
+            metrics_recorder.record_error(
+                error_type=type(e).__name__,
+                operation="rag_query"
+            )
             log_error(self.logger, e, {
                 "operation": "rag_query",
                 "question": question,

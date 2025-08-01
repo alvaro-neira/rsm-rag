@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from pydantic import BaseModel
 from typing import List, Dict, Any
 from app.services.rag_service import RAGService
 from app.core.logging_config import get_logger, log_event, log_error
+from app.core.metrics import get_metrics_content
 
 # Initialize RAG service and logger
 rag_service = RAGService()
@@ -37,6 +38,13 @@ class IngestResponse(BaseModel):
 async def health_check():
     """Health check endpoint"""
     return {"status": "ok"}
+
+
+@router.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint"""
+    content, content_type = get_metrics_content()
+    return Response(content=content, media_type=content_type)
 
 
 @router.post("/ingest", response_model=IngestResponse)
