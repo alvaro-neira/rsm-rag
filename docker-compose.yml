@@ -2,30 +2,26 @@ services:
   rag-api:
     build: .
     ports:
-      - "${PORT:-8000}:${PORT:-8000}"
+      - "8000:8000"
     environment:
-      - PORT=${PORT:-8000}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
       - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
       - LANGFUSE_HOST=${LANGFUSE_HOST}
     volumes:
-      - ${CHROMA_DB_PATH:-./data}:/app/data
+      - ./data:/app/data
 
   prometheus:
     image: prom/prometheus:latest
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml.template:/tmp/prometheus.yml.template
-    environment:
-      - PORT=${PORT:-8000}
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
     command:
-      - /bin/sh
-      - -c
-      - |
-        envsubst < /tmp/prometheus.yml.template > /etc/prometheus/prometheus.yml &&
-        /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.console.libraries=/etc/prometheus/console_libraries --web.console.templates=/etc/prometheus/consoles
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
 
   grafana:
     image: grafana/grafana:latest

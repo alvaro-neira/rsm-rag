@@ -4,8 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configuration - use same path as main application via environment variable
-CHROMA_DB_PATH = os.getenv("CHROMA_DB_PATH", "../data/chroma_db")
+CHROMA_DB_PATH = "../data/chroma_db"
 
 
 def browse_chroma_data():

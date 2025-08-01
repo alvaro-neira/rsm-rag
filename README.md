@@ -10,6 +10,35 @@
 - OpenAI API key
 - Langfuse account
 
+## How to use deploy this service
+
+```bash
+git clone git@github.com:alvaro-neira/rsm-rag.git
+cd rsm-rag
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Create .env file with the environment variables described in point 3
+vim .env
+
+# Build and start FastAPI server with Docker (Docker Desktop must be running)
+docker compose up --build
+
+# Access the API
+curl http://localhost:8000/health
+```
+
+
+The FastAPI server can be run without docker:
+```bash
+python -m app.main
+```
+
 ## 1. Indexing
 
 - **Engine**: Chroma (local, persistent). The reasons for using Chroma are its
@@ -19,8 +48,8 @@ simplicity and lightweight, compared to other alternatives such as Pinecone or F
 
 ## 2. API Endpoints (FastAPI)
 
-- `GET /health` → returns 200 OK.  
-- `POST /ingest` → triggers the ingestion. The 2 documents ("Think Python" and "PEP 8") are automatically ingested when the service starts.
+- `GET http://localhost:8000/health` → returns 200 OK.  
+- `POST http://localhost:8000/ingest` → triggers the ingestion. The 2 documents ("Think Python" and "PEP 8") are automatically ingested when the service starts.
 It doesn't accept any parameters. It returs:
 ```json
 {
@@ -33,7 +62,7 @@ It doesn't accept any parameters. It returs:
     }
 }
 ```
-- `POST /query` → accepts:
+- `POST http://localhost:8000/query` → accepts:
 
   ```json
   { "question": "<text>" }
@@ -60,15 +89,14 @@ It doesn't accept any parameters. It returs:
   - LANGFUSE_PUBLIC_KEY=pk-...
   - LANGFUSE_SECRET_KEY=sk-...
   - LANGFUSE_HOST=https://....cloud.langfuse.com
-  - CHROMA_DB_PATH=optional
-  - PORT=optional
 
 ## 4. Observability
 
 ### Langfuse Tracing
 * Used Langfuse for observability and not LangSmith because the former allows explicit tracing control.
+To see the instrumented spans, see them in https://cloud.langfuse.com/
 
-## Structured Logging
+### Structured Logging
 The application emits structured JSON logs for all requests, errors, and significant events. All logs include:
 
 **Standard Fields:**
@@ -87,33 +115,9 @@ The application emits structured JSON logs for all requests, errors, and signifi
 - `document_ingestion_completed`: Document ingestion completed
 - `error`: Error occurred with context
 
-**Example Log Formats:**
+**Example:**
 
 ```json
-// Request Log
-{
-  "timestamp": "2025-08-01T01:17:39.888Z",
-  "level": "INFO",
-  "service": "rsm-rag",
-  "logger": "rsm-rag.middleware",
-  "message": "POST /query",
-  "event_type": "request",
-  "http_method": "POST",
-  "path": "/query"
-}
-
-// Query Processing Log
-{
-  "timestamp": "2025-08-01T01:17:40.123Z",
-  "level": "INFO",
-  "service": "rsm-rag",
-  "logger": "rsm-rag.api",
-  "message": "Processing RAG query",
-  "event_type": "query_started",
-  "question": "What is a variable?",
-  "question_length": 18
-}
-
 // Error Log
 {
   "timestamp": "2025-08-01T01:17:41.456Z",
@@ -129,23 +133,9 @@ The application emits structured JSON logs for all requests, errors, and signifi
   "exception": "Traceback (most recent call last)..."
 }
 
-// Response Log
-{
-  "timestamp": "2025-08-01T01:17:42.789Z",
-  "level": "INFO",
-  "service": "rsm-rag",
-  "logger": "rsm-rag.middleware",
-  "message": "POST /query - 200 (1250.50ms)",
-  "event_type": "response",
-  "http_method": "POST",
-  "path": "/query",
-  "status_code": 200,
-  "duration_ms": 1250.5
-}
-
 ```
 ### System Metrics
-The application exposes comprehensive metrics for monitoring and alerting at `/metrics` endpoint using Prometheus format (the most suitable for this kind of metrics).
+The application exposes comprehensive metrics for monitoring and alerting at `/metrics` endpoint:
 
 **HTTP Request Metrics:**
 - `http_requests_total` - Total HTTP requests by method, endpoint, and status code
@@ -177,44 +167,71 @@ The application exposes comprehensive metrics for monitoring and alerting at `/m
 ```bash
 # Access metrics endpoint
 curl http://localhost:8000/metrics
-
-# Example Prometheus scrape config
-scrape_configs:
-  - job_name: 'rsm-rag'
-    static_configs:
-      - targets: ['localhost:8000']
-    metrics_path: '/metrics'
-    scrape_interval: 15s
 ```
 
-To see the instrumented spans, go to https://cloud.langfuse.com/
+Prometheus and Grafana are included in the Docker Compose setup for easy monitoring and visualization of these metrics:
+* Prometheus: http://localhost:9090
+* Grafana: http://localhost:3000 (User: admin/ Pass: admin)
 
-## How to use this
+(Only if the FastAPI server is run with Docker)
 
-```bash
-git clone git@github.com:alvaro-neira/rsm-rag.git
-cd rsm-rag
+### Create Useful Queries In Prometheus (http://localhost:9090):
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Create .env file with the environment variables described in point 3
-vim .env
-
-# Build and start FastAPI server with Docker (Docker Desktop must be running)
-docker compose up --build
-
-# Access the API
-curl http://localhost:8000/health
+**1. Query Processing Rate:**
+```promql
+rate(rag_queries_total[5m])
 ```
 
-The FastAPI server can be run without docker:
-```bash
-python -m app.main
+**2. Average Query Duration:**
+```promql
+rate(rag_query_duration_seconds_sum[5m]) / rate(rag_query_duration_seconds_count[5m])
+```
+
+**3. Request Error Rate:**
+```promql
+rate(http_requests_total{status_code!="200"}[5m]) / rate(http_requests_total[5m])
+```
+
+**4. 95th Percentile Response Time:**
+```promql
+histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+```
+
+### Set Up Grafana Dashboard
+
+### 1. Access Grafana:
+- Go to http://localhost:3000
+- Login: admin/admin
+- Change password when prompted
+
+### 2. Add Prometheus Data Source:
+- Click "Add data source"
+- Select "Prometheus"
+- URL: `http://prometheus:9090`
+- Click "Save & Test"
+
+### 3. Create RAG Dashboard:
+
+**Create panels for:**
+
+**Panel 1: RAG Queries per Second**
+```promql
+rate(rag_queries_total[1m])
+```
+
+**Panel 2: Average Query Duration**
+```promql
+rate(rag_query_duration_seconds_sum[5m]) / rate(rag_query_duration_seconds_count[5m])
+```
+
+**Panel 3: HTTP Request Duration by Endpoint**
+```promql
+http_request_duration_seconds{method="POST"}
+```
+
+**Panel 4: Error Rate**
+```promql
+(rate(http_requests_total{status_code!="200"}[5m]) / rate(http_requests_total[5m])) * 100
 ```
 
 ## Testing

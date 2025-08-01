@@ -19,8 +19,9 @@ COPY .env .env
 # Create data directory for Chroma
 RUN mkdir -p ./data
 
-# Expose port
-EXPOSE 8000
+# Set default port and expose it
+ENV PORT=8000
+EXPOSE ${PORT}
 
 # Run the application
 CMD ["python", "-m", "app.main"]

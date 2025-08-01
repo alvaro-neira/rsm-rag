@@ -1,8 +1,10 @@
 import requests
+import os
 
 
 def test_api_endpoints():
-    base_url = "http://localhost:8000"
+    port = os.getenv("PORT", "8000")
+    base_url = f"http://localhost:{port}"
 
     print("Testing FastAPI endpoints...")
 
