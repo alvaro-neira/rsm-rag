@@ -1,6 +1,5 @@
 import time
-import json
-from fastapi import Request, Response
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.core.logging_config import get_logger, log_request, log_response
 

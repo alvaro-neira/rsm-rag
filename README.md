@@ -16,6 +16,41 @@
 simplicity and lightweight, compared to other alternatives such as Pinecone or FAISS.
 - **Embedding Model**: OpenAI text-embedding-3-small (1536 dimensions)
 - **Chunk Size**: 1000 characters with 200 character overlap
+
+## 2. API Endpoints (FastAPI)
+
+- `GET /health` → returns 200 OK.  
+- `POST /ingest` → triggers the ingestion. The 2 documents ("Think Python" and "PEP 8") are automatically ingested when the service starts.
+It doesn't accept any parameters. It returs:
+```json
+{
+    "status": "success",
+    "message": "Successfully ingested 616 documents",
+    "total_documents": 616,
+    "sources": {
+        "Think Python": 556,
+        "PEP 8": 60
+    }
+}
+```
+- `POST /query` → accepts:
+
+  ```json
+  { "question": "<text>" }
+  ```
+
+  and returns:
+
+  ```json
+  {
+    "answer": "<generated answer>",
+    "sources": [
+      { "page": <number>, "text": "<passage text>" },
+        ...
+    ]
+  }
+  ```
+
 ## 3. LLM Integration with LangChain
 
 - Used OpenAI API because that API is the one that I am most familiar with. 
@@ -25,8 +60,10 @@ simplicity and lightweight, compared to other alternatives such as Pinecone or F
   - LANGFUSE_PUBLIC_KEY=pk-...
   - LANGFUSE_SECRET_KEY=sk-...
   - LANGFUSE_HOST=https://....cloud.langfuse.com
+  - CHROMA_DB_PATH=optional
+  - PORT=optional
 
-## 4. Observability & Monitoring
+## 4. Observability
 
 ### Langfuse Tracing
 * Used Langfuse for observability and not LangSmith because the former allows explicit tracing control.
@@ -149,6 +186,8 @@ scrape_configs:
     metrics_path: '/metrics'
     scrape_interval: 15s
 ```
+
+To see the instrumented spans, go to https://cloud.langfuse.com/
 
 ## How to use this
 

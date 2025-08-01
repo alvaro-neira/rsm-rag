@@ -1,8 +1,7 @@
 """
 Middleware to collect Prometheus metrics for HTTP requests
 """
-import time
-from fastapi import Request, Response
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.core.metrics import metrics_recorder
 from app.core.logging_config import get_logger

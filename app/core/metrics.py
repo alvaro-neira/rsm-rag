@@ -2,7 +2,7 @@
 Prometheus metrics configuration and collectors for RSM RAG microservice
 """
 from prometheus_client import Counter, Histogram, Gauge, Info, generate_latest, CONTENT_TYPE_LATEST
-from typing import Dict, Any
+from typing import Dict
 import time
 
 

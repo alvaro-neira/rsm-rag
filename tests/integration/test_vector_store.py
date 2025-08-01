@@ -1,4 +1,6 @@
-# Doesn't need the FastAPI server running
+"""
+Doesn't need the FastAPI server running
+"""
 
 from app.services.document_service import DocumentService
 from app.services.embedding_service import EmbeddingService

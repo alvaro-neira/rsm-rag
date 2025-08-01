@@ -5,15 +5,32 @@ from app.core.logging_config import get_logger, log_event
 from app.core.metrics import metrics_recorder
 from langfuse import observe
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class VectorStore:
-    def __init__(self, persist_directory: str = "./data/chroma_db"):
+    def __init__(self, persist_directory: str = None):
         """Initialize Chroma vector store"""
         self.logger = get_logger("vector_store")
         
+        # Use environment variable or default path
+        if persist_directory is None:
+            persist_directory = os.getenv("CHROMA_DB_PATH", "../data/chroma_db")
+        
+        # Convert to absolute path for clarity
+        persist_directory = os.path.abspath(persist_directory)
+        
         # Create directory if it doesn't exist
         os.makedirs(persist_directory, exist_ok=True)
+        
+        log_event(
+            self.logger, 
+            "vector_store_path", 
+            "ChromaDB path initialized",
+            path=persist_directory
+        )
 
         # Initialize Chroma client with persistence
         self.client = chromadb.PersistentClient(path=persist_directory)

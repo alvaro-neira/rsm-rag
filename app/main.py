@@ -3,6 +3,10 @@ from app.api.endpoints import router
 from app.middleware.logging_middleware import LoggingMiddleware
 from app.middleware.metrics_middleware import MetricsMiddleware
 from app.core.logging_config import setup_logging
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Initialize structured logging
 setup_logging()
@@ -17,4 +21,5 @@ app.include_router(router)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run(app, host="0.0.0.0", port=port)
