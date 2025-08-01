@@ -18,10 +18,7 @@ cd rsm-rag
 
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
+source venv/bin/activate
 
 # Create .env file with the environment variables described in point 3
 vim .env
@@ -36,6 +33,10 @@ curl http://localhost:8000/health
 
 The FastAPI server can be run without docker:
 ```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the FastAPI server
 python -m app.main
 ```
 
@@ -163,7 +164,6 @@ The application emits structured JSON logs for all requests, errors, and signifi
 **Example:**
 
 ```json
-// Error Log
 {
   "timestamp": "2025-08-01T01:17:41.456Z",
   "level": "ERROR",
