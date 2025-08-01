@@ -2,9 +2,11 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any
 from app.services.rag_service import RAGService
+from app.core.logging_config import get_logger, log_event, log_error
 
-# Initialize RAG service
+# Initialize RAG service and logger
 rag_service = RAGService()
+logger = get_logger("api")
 
 router = APIRouter()
 
@@ -41,7 +43,18 @@ async def health_check():
 async def ingest_documents():
     """Trigger document ingestion"""
     try:
+        log_event(logger, "document_ingestion_started", "Starting document ingestion")
+        
         result = rag_service.ingest_documents()
+        
+        log_event(
+            logger, 
+            "document_ingestion_completed", 
+            "Document ingestion completed successfully",
+            total_documents=result["total_documents"],
+            sources=result["sources"]
+        )
+        
         return IngestResponse(
             status=result["status"],
             message=result["message"],
@@ -49,6 +62,7 @@ async def ingest_documents():
             sources=result["sources"]
         )
     except Exception as e:
+        log_error(logger, e, {"operation": "document_ingestion"})
         raise HTTPException(status_code=500, detail=f"Ingestion failed: {str(e)}")
 
 
@@ -56,10 +70,32 @@ async def ingest_documents():
 async def query_documents(request: QueryRequest):
     """Query documents using RAG"""
     try:
+        log_event(
+            logger, 
+            "query_started", 
+            "Processing RAG query",
+            question=request.question,
+            question_length=len(request.question)
+        )
+        
         result = rag_service.query(request.question)
+        
+        log_event(
+            logger, 
+            "query_completed", 
+            "RAG query completed successfully",
+            question=request.question,
+            answer_length=len(result["answer"]),
+            sources_found=len(result["sources"])
+        )
+        
         return QueryResponse(
             answer=result["answer"],
             sources=result["sources"]
         )
     except Exception as e:
+        log_error(logger, e, {
+            "operation": "rag_query",
+            "question": request.question
+        })
         raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")

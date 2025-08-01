@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from typing import List
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
+from app.core.logging_config import get_logger, log_event, log_error
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,7 +11,8 @@ load_dotenv()
 
 def load_think_python() -> str:
     """Load the Think Python book content"""
-    print("Loading Think Python book...")
+    logger = get_logger("document_service")
+    log_event(logger, "think_python_load_started", "Loading Think Python book")
 
     # Think Python has multiple chapters, let's get the main chapters
     base_url = "https://allendowney.github.io/ThinkPython/"
@@ -31,10 +33,10 @@ def load_think_python() -> str:
             if main_content:
                 text = main_content.get_text(strip=True, separator=' ')
                 all_content.append(f"Chapter: {chapter}\n\n{text}")
-                print(f"Loaded {chapter}")
+                log_event(logger, "chapter_loaded", f"Loaded chapter", chapter=chapter)
 
         except Exception as e:
-            print(f"Failed to load {chapter}: {str(e)}")
+            log_error(logger, e, {"operation": "load_think_python_chapter", "chapter": chapter})
             continue
 
     return "\n\n".join(all_content)
@@ -42,7 +44,8 @@ def load_think_python() -> str:
 
 def load_pep8() -> str:
     """Load PEP 8 content"""
-    print("Loading PEP 8...")
+    logger = get_logger("document_service")
+    log_event(logger, "pep8_load_started", "Loading PEP 8")
 
     try:
         url = "https://peps.python.org/pep-0008/"
@@ -55,14 +58,17 @@ def load_pep8() -> str:
         main_content = soup.find('section', id='pep-content') or soup.find('div', class_='section')
         if main_content:
             text = main_content.get_text(strip=True, separator=' ')
-            print("Loaded PEP 8")
+            log_event(logger, "pep8_loaded", "PEP 8 loaded successfully")
             return text
         else:
-            print("Could not find PEP 8 main content")
+            logger.warning(
+                "PEP 8 content not found",
+                extra={"event_type": "pep8_content_missing"}
+            )
             return ""
 
     except Exception as e:
-        print(f"Failed to load PEP 8: {str(e)}")
+        log_error(logger, e, {"operation": "load_pep8"})
         return ""
 
 
@@ -73,10 +79,17 @@ class DocumentService:
             chunk_overlap=200,
             length_function=len,
         )
+        self.logger = get_logger("document_service")
 
     def chunk_text(self, text: str, source: str) -> List[Document]:
         """Split text into chunks"""
-        print(f"Chunking {source}...")
+        log_event(
+            self.logger, 
+            "text_chunking_started", 
+            "Starting text chunking",
+            source=source,
+            text_length=len(text)
+        )
         chunks = self.text_splitter.split_text(text)
         documents = []
 
@@ -87,7 +100,13 @@ class DocumentService:
             )
             documents.append(doc)
 
-        print(f"Created {len(chunks)} chunks for {source}")
+        log_event(
+            self.logger, 
+            "text_chunking_completed", 
+            "Text chunking completed",
+            source=source,
+            chunks_created=len(chunks)
+        )
         return documents
 
     def load_all_documents(self) -> List[Document]:
@@ -106,5 +125,10 @@ class DocumentService:
             pep8_docs = self.chunk_text(pep8_text, "PEP 8")
             all_documents.extend(pep8_docs)
 
-        print(f"Total documents loaded: {len(all_documents)}")
+        log_event(
+            self.logger, 
+            "document_loading_completed", 
+            "All documents loaded",
+            total_documents=len(all_documents)
+        )
         return all_documents

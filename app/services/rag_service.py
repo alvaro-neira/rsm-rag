@@ -3,6 +3,7 @@ from langchain_openai import ChatOpenAI
 from app.services.document_service import DocumentService
 from app.services.embedding_service import EmbeddingService
 from app.services.vector_store import VectorStore
+from app.core.logging_config import get_logger, log_event, log_error
 from langfuse import Langfuse
 from langfuse import observe
 import os
@@ -36,6 +37,7 @@ class RAGService:
         self.document_service = DocumentService()
         self.embedding_service = EmbeddingService()
         self.vector_store = VectorStore()
+        self.logger = get_logger("rag_service")
 
         # Initialize LLM
         self.llm = ChatOpenAI(
@@ -54,7 +56,7 @@ class RAGService:
     @observe()
     def ingest_documents(self) -> Dict[str, Any]:
         """Load, embed, and store all documents with tracing"""
-        print("Starting document ingestion...")
+        log_event(self.logger, "ingestion_started", "Starting document ingestion")
 
         try:
             # Load documents
@@ -76,17 +78,30 @@ class RAGService:
                 "message": f"Successfully ingested {len(documents)} documents"
             }
 
-            print(f"Ingestion complete: {result['message']}")
+            log_event(
+                self.logger, 
+                "ingestion_completed", 
+                "Document ingestion completed",
+                total_documents=result['total_documents'],
+                sources=result['sources'],
+                embedding_duration_seconds=duration
+            )
             return result
 
         except Exception as e:
-            print(f"Error during ingestion: {str(e)}")
+            log_error(self.logger, e, {"operation": "document_ingestion"})
             raise
 
     @observe()
     def query(self, question: str, k: int = 5) -> Dict[str, Any]:
         """Answer a question using RAG with full tracing"""
-        print(f"Processing query: '{question}'")
+        log_event(
+            self.logger, 
+            "query_started", 
+            "Processing RAG query",
+            question=question,
+            k=k
+        )
 
         try:
             # Generate query embedding
@@ -127,9 +142,21 @@ class RAGService:
                 "sources": sources
             }
 
-            print(f"Generated answer ({len(answer)} characters)")
+            log_event(
+                self.logger, 
+                "query_completed", 
+                "RAG query processing completed",
+                question=question,
+                answer_length=len(answer),
+                sources_found=len(sources),
+                context_chunks=len(context_chunks)
+            )
             return result
 
         except Exception as e:
-            print(f"Error: {str(e)}")
+            log_error(self.logger, e, {
+                "operation": "rag_query",
+                "question": question,
+                "k": k
+            })
             raise

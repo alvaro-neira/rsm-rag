@@ -1,12 +1,15 @@
 import chromadb
 from typing import List, Dict, Any
 from langchain.schema import Document
+from app.core.logging_config import get_logger, log_event
 import os
 
 
 class VectorStore:
     def __init__(self, persist_directory: str = "./data/chroma_db"):
         """Initialize Chroma vector store"""
+        self.logger = get_logger("vector_store")
+        
         # Create directory if it doesn't exist
         os.makedirs(persist_directory, exist_ok=True)
 
@@ -19,11 +22,23 @@ class VectorStore:
             metadata={"description": "RAG microservice document collection"}
         )
 
-        print(f"Vector store initialized. Collection size: {self.collection.count()}")
+        collection_size = self.collection.count()
+        log_event(
+            self.logger, 
+            "vector_store_initialized", 
+            "Vector store initialized",
+            collection_size=collection_size,
+            persist_directory=persist_directory
+        )
 
     def add_documents(self, documents: List[Document], embeddings: List[List[float]]):
         """Add documents and their embeddings to the vector store"""
-        print(f"Adding {len(documents)} documents to vector store...")
+        log_event(
+            self.logger, 
+            "documents_add_started", 
+            "Adding documents to vector store",
+            document_count=len(documents)
+        )
 
         # Prepare data for Chroma
         ids = [f"doc_{i}" for i in range(len(documents))]
@@ -38,7 +53,14 @@ class VectorStore:
             metadatas=metadatas
         )
 
-        print(f"Added {len(documents)} documents. Total in collection: {self.collection.count()}")
+        total_count = self.collection.count()
+        log_event(
+            self.logger, 
+            "documents_add_completed", 
+            "Documents added to vector store",
+            documents_added=len(documents),
+            total_collection_size=total_count
+        )
 
     def similarity_search(self, query_embedding: List[float], k: int = 5) -> List[Dict[str, Any]]:
         """Search for similar documents"""

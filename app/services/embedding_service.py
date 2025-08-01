@@ -1,6 +1,7 @@
 from langchain_openai import OpenAIEmbeddings
 from langchain.schema import Document
 from typing import List
+from app.core.logging_config import get_logger, log_event, log_error
 import os
 from dotenv import load_dotenv
 
@@ -13,10 +14,16 @@ class EmbeddingService:
             model="text-embedding-3-small",  # Cost-effective and good quality
             openai_api_key=os.getenv("OPENAI_API_KEY")
         )
+        self.logger = get_logger("embedding_service")
 
     def generate_embeddings(self, documents: List[Document]) -> List[List[float]]:
         """Generate embeddings for a list of documents"""
-        print(f"Generating embeddings for {len(documents)} documents...")
+        log_event(
+            self.logger, 
+            "embedding_generation_started", 
+            "Starting embedding generation",
+            document_count=len(documents)
+        )
 
         # Extract text content from documents
         texts = [doc.page_content for doc in documents]
@@ -24,11 +31,19 @@ class EmbeddingService:
         try:
             # Generate embeddings in batches to avoid rate limits
             embeddings = self.embeddings.embed_documents(texts)
-            print(f"Generated {len(embeddings)} embeddings")
+            log_event(
+                self.logger, 
+                "embedding_generation_completed", 
+                "Embedding generation completed",
+                embeddings_generated=len(embeddings)
+            )
             return embeddings
 
         except Exception as e:
-            print(f"Error generating embeddings: {str(e)}")
+            log_error(self.logger, e, {
+                "operation": "embedding_generation",
+                "document_count": len(documents)
+            })
             raise
 
     def generate_query_embedding(self, query: str) -> List[float]:
@@ -37,5 +52,8 @@ class EmbeddingService:
             embedding = self.embeddings.embed_query(query)
             return embedding
         except Exception as e:
-            print(f"Error generating query embedding: {str(e)}")
+            log_error(self.logger, e, {
+                "operation": "query_embedding_generation",
+                "query": query
+            })
             raise
