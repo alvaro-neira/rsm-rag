@@ -16,10 +16,6 @@
 git clone git@github.com:alvaro-neira/rsm-rag.git
 cd rsm-rag
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate
-
 # Create .env file with the environment variables described in point 3
 vim .env
 
@@ -33,12 +29,18 @@ curl http://localhost:8000/health
 
 The FastAPI server can be run without docker:
 ```bash
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate
+
 # Install dependencies
 pip install -r requirements.txt
 
 # Run the FastAPI server
 python -m app.main
 ```
+
+Note: you can't run both versions of the server at the same time.
 
 ## 1. Indexing
 
@@ -284,8 +286,17 @@ Example:
 
 ## Testing
 ```bash
+# Create virtual environment if you haven't already
+python -m venv venv
+source venv/bin/activate
+
+# Create virtual environment if you haven't already
+pip install -r requirements.txt
+
 # Install test dependencies
 pip install pytest pytest-mock
+
+# Run the FastAPI server (docker or directly with Python)
 
 # Run tests (unit tests, integration tests, end-to-end tests)
 pytest -v
