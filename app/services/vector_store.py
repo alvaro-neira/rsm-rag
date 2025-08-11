@@ -17,7 +17,7 @@ class VectorStore:
         
         # Use environment variable or default path
         if persist_directory is None:
-            persist_directory = "../data/chroma_db"
+            persist_directory = "data/chroma_db"
         
         # Convert to absolute path for clarity
         persist_directory = os.path.abspath(persist_directory)
